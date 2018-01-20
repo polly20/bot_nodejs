@@ -1,0 +1,3 @@
+We have sent MPIN to this mobile (09177715380), your command is (BAL), Please type MPIN<space>6 digits then hit enter
+375899
+message sent!
