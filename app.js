@@ -8,12 +8,22 @@ app.use(bodyParser.json());
 
 const PAGE_ACCESS_TOKEN = "EAAYYmSZAZBhIkBACqwsWHRjX7P9ko35EPBZBiTnZAD2DlSBuZCtJJZByDHx1ZCMsyLFSEbocLP2ZCKQXZBVbOOphlmp8Hiv8RRounnGiVrAMcY6fvBhORI7H2HERJbeI31aTQ4KtSSioId02egzM5QSJOQ8nVXzHxCLxElpv1EU4oJwSMQDLAqUyA";
 const VERIFY_TOKEN = "PAOPAO2121";
+const API_URL = "http://home.kpa.ph:5000";
 
 var newCache;
 
 // Test
 app.get('/test', (req, res) => {
-  callSendPtxt4wrdAPI(res, '09177715380', 'BAL');
+  // callSendPtxt4wrdAPI(res, '09177715380', 'BAL');
+
+  var command = "LC 09177715380 BAL/09177715380";
+
+  var datas = command.split(" ");
+
+  console.log(datas);
+
+  res.send("nope");
+
 });
 
 // Test
@@ -92,7 +102,7 @@ function handleMessage(sender_psid, received_message) {
     var data;
     var msg = received_message.text;
     if(msg.includes("LC")) {
-      data = msg.split("/");
+      data = msg.split(" ");
       console.log(data);
       if(data.length > 1) {
         callSendPtxt4wrdAPI(sender_psid, data[1], data[2]);
@@ -103,6 +113,13 @@ function handleMessage(sender_psid, received_message) {
       console.log(data);
       if(data.length > 0) {
         mpinVerify(sender_psid, data[1]);
+      }
+    }
+    else if(msg.includes("PTXT")) {
+      data = msg.split(" ");
+      console.log(data);
+      if(data.length > 0) {
+        callPTXT4wrdSMSAPI(sender_psid, data[1], data[2]);
       }
     }
     else {
@@ -167,21 +184,22 @@ function callSendAPI(sender_psid, response) {
 function callSendPtxt4wrdAPI(sender_psid, mobile, command) {
   // Construct the message body
 
+  // var command = msg.split("/");
+
   let request_body = {
     "mobile": mobile,
-    "command": command
+    "command": command.replace("-", " ")
   }
 
   newCache = new cache.Cache();
   var stringMSG = null;
   // Send the HTTP request to the Messenger Platform
   request({
-    "uri": "http://localhost:8002/command/execute/v2",
+    "uri": API_URL + "/command/execute/v2",
     "method": "GET",
     "json": request_body
   }, (err, res, body) => {
     if (!err) {
-
       var mpin_verify = body['MPIN'];
       newCache.put('MPIN', mpin_verify);
       newCache.put('MOBILE', mobile);
@@ -192,13 +210,11 @@ function callSendPtxt4wrdAPI(sender_psid, mobile, command) {
 
       console.log(summary);
       console.log(newCache.get('MPIN'));
-
       handleMessageSend(sender_psid, summary);
     } 
     else {
       console.error("Unable to send message:" + err);
       stringMSG = "Unable to send message:" + err;
-
       handleMessageSend(sender_psid, stringMSG);
     }
   });
@@ -218,7 +234,7 @@ function callSendLoad4wrdAPI(sender_psid, mobile, command) {
   var stringMSG = null;
   // Send the HTTP request to the Messenger Platform
   request({
-    "uri": "http://localhost:8002/command/process/v2",
+    "uri": API_URL + "/command/process/v2",
     "method": "GET",
     "json": request_body
   }, (err, res, body) => {
@@ -228,7 +244,6 @@ function callSendLoad4wrdAPI(sender_psid, mobile, command) {
       if(status == 200) {
         msg = "Your request is being processed.";
       }
-
       console.error(msg);
       handleMessageSend(sender_psid, msg);
     } 
@@ -244,7 +259,6 @@ function callSendLoad4wrdAPI(sender_psid, mobile, command) {
 }
 
 function mpinVerify(sender_psid, users_mpin) {
-
   var cache_mpin = 0;
   try{
     cache_mpin = newCache.get('MPIN');
@@ -265,5 +279,45 @@ function mpinVerify(sender_psid, users_mpin) {
   console.log("mem_cache: " + cache_mpin);
   console.log("user_pin: " + users_mpin);
 }
+
+function callPTXT4wrdSMSAPI(sender_psid, mobile, message) {
+  // Construct the message body
+
+  let request_body = {
+    "mobile": mobile,
+    "message": message
+  }
+
+  newCache = new cache.Cache();
+  var stringMSG = null;
+  // Send the HTTP request to the Messenger Platform
+  request({
+    "uri": API_URL + "/command/ptxt",
+    "method": "GET",
+    "json": request_body
+  }, (err, res, body) => {
+    if (!err) {
+      var status = parseInt(body['Status']);
+      var msg = "Something went wrong, please try again.";
+      if(status == 200) {
+        msg = "Your message is being sent.";
+      }
+      if(status == 201) {
+        msg = "Your message is being sent.";
+      }
+      console.error(msg);
+      handleMessageSend(sender_psid, msg);
+    } 
+    else {
+      console.error("Unable to send message:" + err);
+      stringMSG = "Unable to send message:" + err;
+      handleMessageSend(sender_psid, stringMSG);
+    }
+  });
+
+  return stringMSG;
+}
+
+// app.listen(3200);
 
 app.listen(process.env.PORT);
