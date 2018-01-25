@@ -14,22 +14,9 @@ var newCache;
 
 // Test
 app.get('/test', (req, res) => {
-<<<<<<< HEAD
-  // callSendPtxt4wrdAPI(res, '09177715380', 'BAL');
-
-  var command = "LC 09177715380 BAL/09177715380";
-
-  var datas = command.split(" ");
-
-  console.log(datas);
-
-  res.send("nope");
-
-=======
   res.setHeader('Content-Type', 'application/json');
   console.log(settings);
   res.json(settings);
->>>>>>> c5978e17e880f651e05e954c192f5c129dd795f0
 });
 
 // Test
@@ -99,6 +86,7 @@ function handleMessage(sender_psid, received_message) {
     // Create the payload for a basic text message
     var data;
     var msg = received_message.text;
+
     if(msg.includes("LC")) {
       data = msg.split(" ");
       console.log(data);
@@ -106,6 +94,7 @@ function handleMessage(sender_psid, received_message) {
         callSendPtxt4wrdAPI(sender_psid, data[1], data[2]);
       }
     }
+
     else if(msg.includes("MPIN")) {
       data = msg.split(" ");
       console.log(data);
@@ -113,6 +102,7 @@ function handleMessage(sender_psid, received_message) {
         mpinVerify(sender_psid, data[1]);
       }
     }
+
     else if(msg.includes("PTXT")) {
       data = msg.split(" ");
       console.log(data);
@@ -120,6 +110,7 @@ function handleMessage(sender_psid, received_message) {
         callPTXT4wrdSMSAPI(sender_psid, data[1], data[2]);
       }
     }
+
     else {
       handleMessageSend(sender_psid, msg);
     }
@@ -182,8 +173,6 @@ function callSendAPI(sender_psid, response) {
 function callSendPtxt4wrdAPI(sender_psid, mobile, command) {
   // Construct the message body
 
-  // var command = msg.split("/");
-
   let request_body = {
     "mobile": mobile,
     "command": command.replace("-", " ")
@@ -198,16 +187,17 @@ function callSendPtxt4wrdAPI(sender_psid, mobile, command) {
     "json": request_body
   }, (err, res, body) => {
     if (!err) {
+      console.log(body);
       var mpin_verify = body['MPIN'];
       newCache.put('MPIN', mpin_verify);
       newCache.put('MOBILE', mobile);
       newCache.put('COMMAND', command);
 
-      var summary = "We have sent MPIN to this mobile (" + body['Mobile'] + "), ";
-      summary += "your command is (" + body['Command'] + "), Please type MPIN<space>6 digits then hit enter";
+      var summary = "We have sent MPIN to this mobile " + body['Mobile'] + ", Your command is " + body['Command'] + ".\r\nPlease type MPIN<space>6 digits then hit enter";
 
       console.log(summary);
       console.log(newCache.get('MPIN'));
+      console.log(sender_psid);
       handleMessageSend(sender_psid, summary);
     } 
     else {
@@ -315,10 +305,6 @@ function callPTXT4wrdSMSAPI(sender_psid, mobile, message) {
   return stringMSG;
 }
 
-<<<<<<< HEAD
-=======
-
->>>>>>> c5978e17e880f651e05e954c192f5c129dd795f0
 // app.listen(3200);
 
 app.listen(process.env.PORT);
