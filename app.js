@@ -5,15 +5,16 @@ var cache = require('memory-cache');
 var app = express();
 app.use(bodyParser.urlencoded({"extended": false}));
 app.use(bodyParser.json());
+var settings = require('./settings.js');
 
-const PAGE_ACCESS_TOKEN = "EAAYYmSZAZBhIkBACqwsWHRjX7P9ko35EPBZBiTnZAD2DlSBuZCtJJZByDHx1ZCMsyLFSEbocLP2ZCKQXZBVbOOphlmp8Hiv8RRounnGiVrAMcY6fvBhORI7H2HERJbeI31aTQ4KtSSioId02egzM5QSJOQ8nVXzHxCLxElpv1EU4oJwSMQDLAqUyA";
-const VERIFY_TOKEN = "PAOPAO2121";
-const API_URL = "http://home.kpa.ph:5000";
-
+const PAGE_ACCESS_TOKEN = settings.PAGE_ACCESS_TOKEN; //"EAAYYmSZAZBhIkBACqwsWHRjX7P9ko35EPBZBiTnZAD2DlSBuZCtJJZByDHx1ZCMsyLFSEbocLP2ZCKQXZBVbOOphlmp8Hiv8RRounnGiVrAMcY6fvBhORI7H2HERJbeI31aTQ4KtSSioId02egzM5QSJOQ8nVXzHxCLxElpv1EU4oJwSMQDLAqUyA";
+const VERIFY_TOKEN = settings.VERIFY_TOKEN; //"PAOPAO2121";
+const API_URL = settings.API_URL; //"http://home.kpa.ph:5000";
 var newCache;
 
 // Test
 app.get('/test', (req, res) => {
+<<<<<<< HEAD
   // callSendPtxt4wrdAPI(res, '09177715380', 'BAL');
 
   var command = "LC 09177715380 BAL/09177715380";
@@ -24,27 +25,24 @@ app.get('/test', (req, res) => {
 
   res.send("nope");
 
+=======
+  res.setHeader('Content-Type', 'application/json');
+  console.log(settings);
+  res.json(settings);
+>>>>>>> c5978e17e880f651e05e954c192f5c129dd795f0
 });
 
 // Test
 app.get('/mpin', (req, res) => {
-
   var cache_mpin = newCache.get('MPIN');
-
   var users_mpin = req.query["pin"]
-
   console.log("mem_cache: " + cache_mpin);
-
   console.log("user_pin: " + users_mpin);
-
   res.setHeader("Content-Type", "text/html");
-
   if(parseInt(cache_mpin) == parseInt(users_mpin)) {
     res.send("nice");
   }
-
   res.send("nope");
-
 });
 
 // To verify
@@ -227,7 +225,7 @@ function callSendLoad4wrdAPI(sender_psid, mobile, command) {
 
   let request_body = {
     "mobile": mobile,
-    "command": command
+    "command": command.replace("-", " ")
   }
 
   newCache = new cache.Cache();
@@ -262,7 +260,6 @@ function mpinVerify(sender_psid, users_mpin) {
   var cache_mpin = 0;
   try{
     cache_mpin = newCache.get('MPIN');
-
     cache_mobile = newCache.get('MOBILE');
     cache_command = newCache.get('COMMAND');
 
@@ -318,6 +315,10 @@ function callPTXT4wrdSMSAPI(sender_psid, mobile, message) {
   return stringMSG;
 }
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> c5978e17e880f651e05e954c192f5c129dd795f0
 // app.listen(3200);
 
 app.listen(process.env.PORT);
